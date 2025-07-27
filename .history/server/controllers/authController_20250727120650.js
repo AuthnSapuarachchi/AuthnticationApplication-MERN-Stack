@@ -1,7 +1,7 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import userModel from '../model/usermodel.js';
-import transporter from '../config/nodemailer.js';
+import { text } from 'express';
 
 
 export const register = async (req, res) => {
@@ -21,7 +21,8 @@ export const register = async (req, res) => {
         const newUser = new userModel({ name, email, password: hashedPassword });
         await newUser.save();
 
-        const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+        const token = jwt.sign({ id: newUser._id }, process.env.
+            JWT_SECRET, { expiresIn: '7d' });
 
         res.cookie('token', token, {
             httpOnly: true,
@@ -34,14 +35,10 @@ export const register = async (req, res) => {
             from : process.env.SENDER_EMAIL,
             to: email,
             subject: "Welcome to AuthCodeLab",
-            text: `Hello ${name},\n\nWelcome to AuthCodeLab! We're excited to have you on 
-            board. Your account has been successfully created with email id : ${email}.\n\nBest regards,\nAuthCodeLab Team`
+            text
         }
 
-        await transporter.sendMail(mailOptions);
-
         return res.status(201).json({ success: true, message: "User registered successfully" });
-    
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: "Server error" });
@@ -68,7 +65,8 @@ export const login = async (req, res) => {
             return res.status(400).json({ message: "Invalid password" });
         }
 
-        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+        const token = jwt.sign({ id: user._id }, process.env.
+            JWT_SECRET, { expiresIn: '7d' });
 
         res.cookie('token', token, {
             httpOnly: true,
