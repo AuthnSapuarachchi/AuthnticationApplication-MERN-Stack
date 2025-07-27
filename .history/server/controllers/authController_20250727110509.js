@@ -35,7 +35,7 @@ export const register = async (req, res) => {
     }
 }
 
-export const login = async (req, res) => {
+const login = async (req, res) => {
     const { email, password } = req.body;
 
     if (!email || !password) {
@@ -64,7 +64,7 @@ export const login = async (req, res) => {
             maxAge: 7 * 24 * 60 * 60 * 1000
         });
 
-        return res.status(200).json({ success: true, message: "Login successful" });
+        return res.status(200).json({ message: "Login successful" });
         
     } catch (error) {   
        return res.status(500).json({ success: false, message: "Server error" }); 
@@ -85,3 +85,19 @@ export const logout = async (req, res) => {
     }
 }
 
+export const isAuthenticated = async (req, res, next) => {
+    const token = req.cookies.token;
+
+    if (!token) {
+        return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        req.user = await userModel.findById(decoded.id);
+        next();
+    } catch (error) {
+        console.error(error);
+        return res.status(401).json({ message: "Invalid token" });
+    }
+}

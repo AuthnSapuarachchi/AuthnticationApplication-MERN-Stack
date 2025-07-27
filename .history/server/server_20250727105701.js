@@ -16,6 +16,7 @@ app.use(cors({credentials: true}));
 
 //API Endpoints
 app.get('/', (req, res) =>  res.send('Welcome to the Authentication Server!'));
+);
 app.use('/api/auth', authRoutes);
 
 app.listen(PORT, () => {
