@@ -367,9 +367,6 @@ export const resetPassword = async (req, res) => {
         user.resetOtp = '';
         user.resetOtpExpireAt = 0;
 
-        await user.save();
-        return res.status(200).json({ success: true, message: "Password reset successfully" });
-
     } catch (error) {
         console.error('Reset password error:', error);
         return res.status(500).json({ success: false, message: "Server error", error: error.message });

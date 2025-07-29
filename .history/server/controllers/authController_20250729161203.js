@@ -329,49 +329,10 @@ export const sendResetOtp = async (req, res) => {
             subject: "Password Reset OTP - AuthCodeLab",
             text: `Your OTP for password reset is ${otp}. This OTP will expire in 10 minutes.`,
         }
-        await transporter.sendMail(mailOptions);
 
-        return res.status(200).json({ success: true, message: "Reset OTP sent successfully" });
 
     } catch (error) {
         console.error('Send reset OTP error:', error);
-        return res.status(500).json({ success: false, message: "Server error", error: error.message });
-    }
-
-}
-
-//Reset password function
-export const resetPassword = async (req, res) => {
-    const { email, otp, newPassword } = req.body;
-
-    if (!email || !otp || !newPassword) {
-        return res.status(400).json({ success: false, message: "All fields are required" });
-    }
-
-    try {
-        const user = await userModel.findOne({ email });
-        if (!user) {
-            return res.status(404).json({ success: false, message: "User not found" });
-        }
-
-        if (user.resetOtp === "" || user.resetOtp !== otp) {
-            return res.status(400).json({ success: false, message: "Invalid OTP" });
-        }
-
-        if(user.resetOtpExpireA < Date.now()) {
-            return res.status(400).json({ success: false, message: "OTP expired" });
-        }
-
-        const hashedPassword = await bcrypt.hash(newPassword, 10);
-        user.password = hashedPassword;
-        user.resetOtp = '';
-        user.resetOtpExpireAt = 0;
-
-        await user.save();
-        return res.status(200).json({ success: true, message: "Password reset successfully" });
-
-    } catch (error) {
-        console.error('Reset password error:', error);
         return res.status(500).json({ success: false, message: "Server error", error: error.message });
     }
 
