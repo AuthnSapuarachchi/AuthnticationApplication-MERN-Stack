@@ -15,10 +15,6 @@ const userAuth = async (req, res, next) => {
         console.log('Token decoded successfully:', { userId: tokenDecoded.id });
         
         if (tokenDecoded.id) {
-            // Ensure req.body exists before setting userId
-            if (!req.body) {
-                req.body = {};
-            }
             req.body.userId = tokenDecoded.id; 
             console.log('UserId added to request body:', tokenDecoded.id);
             next();

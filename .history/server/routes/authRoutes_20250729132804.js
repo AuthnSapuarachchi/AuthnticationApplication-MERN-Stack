@@ -1,5 +1,5 @@
 import express from 'express';
-import { login, logout, register, verifyEmail, sendVerifyOtp, testEmail, testAuth } from '../controllers/authController.js';
+import { login, logout, register, verifyEmail, sendVerifyOtp, testEmail, testAuth, healthCheck } from '../controllers/authController.js';
 import userAuth from '../middleware/userAuth.js';
 
 
@@ -12,8 +12,6 @@ authRoutes.post('/send-verify-otp', userAuth, sendVerifyOtp);
 authRoutes.post('/verify-account', userAuth, verifyEmail);
 authRoutes.get('/test-email', testEmail); // Test route for SMTP
 authRoutes.post('/test-auth', userAuth, testAuth); // Test route for authentication
-authRoutes.get('/health', (req, res) => {
-    res.json({ success: true, message: "Server is healthy", timestamp: new Date().toISOString() });
-}); // Simple health check
+authRoutes.get('/health', healthCheck); // Health check route
 
 export default authRoutes;

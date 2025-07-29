@@ -15,10 +15,6 @@ const userAuth = async (req, res, next) => {
         console.log('Token decoded successfully:', { userId: tokenDecoded.id });
         
         if (tokenDecoded.id) {
-            // Ensure req.body exists before setting userId
-            if (!req.body) {
-                req.body = {};
-            }
             req.body.userId = tokenDecoded.id; 
             console.log('UserId added to request body:', tokenDecoded.id);
             next();
@@ -26,6 +22,7 @@ const userAuth = async (req, res, next) => {
             console.log('No user ID found in token');
             return res.status(401).json({ success: false, message: "Unauthorized - Invalid token" });
         }
+        
 
     } catch (error) {
         console.error('UserAuth middleware error:', error);
