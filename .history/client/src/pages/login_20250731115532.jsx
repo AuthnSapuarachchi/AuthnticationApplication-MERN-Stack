@@ -1,0 +1,14 @@
+import React, { useState } from 'react'
+import { assets } from '../assets/assets';
+
+const Login = () => {
+  const [state, setState] = useState('Sign Up');
+
+  return (
+    <div>
+      <img src={assets.lo} alt="" />
+    </div>
+  )
+}
+
+export default Login

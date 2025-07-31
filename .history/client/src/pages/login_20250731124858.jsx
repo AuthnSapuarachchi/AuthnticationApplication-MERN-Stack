@@ -45,7 +45,7 @@ const Login = () => {
             className='bg-transparent outline-none' required/>
           </div>
 
-          <p onClick={() => navigate('/reset-password')} className='mb-4 text-indigo-500 cursor-pointer'>Forgoet Password</p>
+          <p onClick={ className='mb-4 text-indigo-500 cursor-pointer'>Forgoet Password</p>
 
           <button className='w-full bg-gradient-to-r from-indigo-500 to-indigo-900 text-white py-2 rounded-full hover:bg-indigo-900 transition-all cursor-pointer' >{state}</button>
         </form>

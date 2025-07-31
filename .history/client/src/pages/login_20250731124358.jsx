@@ -1,11 +1,7 @@
 import React, { useState } from 'react'
 import { assets } from '../assets/assets';
-import { useNavigate } from 'react-router-dom';
 
 const Login = () => {
-
-  const navigate = useNavigate();
-
   const [state, setState] = useState('Sign Up');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -14,7 +10,7 @@ const Login = () => {
 
   return (
     <div className='flex items-center justify-center min-h-screen px-6 sm:px-0 bg-gradient-to-r from-blue-200 to-purple-400 relative'>
-      <img onClick={() => navigate('/')} src={assets.logo} alt="" className='absolute left-5 sm:left-20
+      <img src={assets.logo} alt="" className='absolute left-5 sm:left-20
       top-5 w-28 sm:w-32 cursor-pointer' />
       <div className='bg-slate-900 p-10 rounded-lg shadow-lg top-5 w-full sm:w-96 text-indigo-300 text-sm'>
         <h2 className='text-3xl font-semibold mb-4 text-white text-center '>
@@ -28,7 +24,7 @@ const Login = () => {
             <input onChange={(e) => setName(e.target.value)} value={name} type="text" placeholder='Full Name' className='bg-transparent outline-none' required/>
           </div>
           )}
-
+          
           <div className=' mb-4 flex items-center gap-4 w-full px-5 py-2.5 bg-[#333A5C] rounded-full shadow-md'>
             <img src={assets.mail_icon} alt="" />
             <input 
@@ -36,7 +32,6 @@ const Login = () => {
               value={email} type="email" placeholder='Email Id' 
               className='bg-transparent outline-none' required/>
           </div>
-
           <div className=' mb-4 flex items-center gap-4 w-full px-5 py-2.5 bg-[#333A5C] rounded-full shadow-md'>
             <img src={assets.lock_icon} alt="" />
             <input 
@@ -45,9 +40,9 @@ const Login = () => {
             className='bg-transparent outline-none' required/>
           </div>
 
-          <p onClick={() => navigate('/reset-password')} className='mb-4 text-indigo-500 cursor-pointer'>Forgoet Password</p>
+          <p className='mb-4 text-indigo-500 cursor-pointer'>Forgoet Password</p>
 
-          <button className='w-full bg-gradient-to-r from-indigo-500 to-indigo-900 text-white py-2 rounded-full hover:bg-indigo-900 transition-all cursor-pointer' >{state}</button>
+          <button className='w-full bg-gradient-to-r from-indigo-500 to-indigo-900 text-white py-2 rounded-full hover:bg-indigo-900 transition-all' >{state}</button>
         </form>
 
         { state === 'Sign Up' ? (
