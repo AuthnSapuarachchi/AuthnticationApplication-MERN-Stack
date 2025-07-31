@@ -1,0 +1,11 @@
+import React, { createContext } from 'react';
+
+export const AppContext = createContext();    
+
+export const AppContextProvider = (this.props) => {
+    return (
+        <AppContext.Provider value={{}}>
+            {children}
+        </AppContext.Provider>
+    );
+}
