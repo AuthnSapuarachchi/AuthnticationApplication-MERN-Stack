@@ -10,32 +10,23 @@ export const AppContextProvider = (props) => {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [userData, setUserData] = useState(null);
 
-    // Set axios defaults once
-    React.useEffect(() => {
-        axios.defaults.withCredentials = true;
-    }, []);
-
     const getUserData = useCallback(async () => {
         try {
+            axios.defaults.withCredentials = true;
             const {data} = await axios.get(backendUrl + '/api/user/data');
             if (data.success) {
                 setUserData(data.userData);
-                setIsLoggedIn(true);
             } else {
                 toast.error(data.message);
-                setUserData(null);
-                setIsLoggedIn(false);
             }
         } catch (error) {
-            console.error('Failed to get user data:', error);
             toast.error(error.response?.data?.message || 'Failed to get user data');
-            setUserData(null);
-            setIsLoggedIn(false);
         }
     }, [backendUrl]);
 
     const getAuthState = useCallback(async ()=> {
         try {
+            axios.defaults.withCredentials = true;
             const {data} = await axios.get(backendUrl + '/api/auth/is-auth');
             if (data.success) {
                 setIsLoggedIn(true);
@@ -60,8 +51,7 @@ export const AppContextProvider = (props) => {
         backendUrl, 
         isLoggedIn, setIsLoggedIn,
         userData, setUserData,
-        getUserData,
-        getAuthState
+        getUserData
     }
 
     return (

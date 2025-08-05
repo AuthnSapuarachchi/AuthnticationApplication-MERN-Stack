@@ -10,45 +10,30 @@ export const AppContextProvider = (props) => {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [userData, setUserData] = useState(null);
 
-    // Set axios defaults once
-    React.useEffect(() => {
-        axios.defaults.withCredentials = true;
-    }, []);
-
     const getUserData = useCallback(async () => {
         try {
+            axios.defaults.withCredentials = true;
             const {data} = await axios.get(backendUrl + '/api/user/data');
             if (data.success) {
                 setUserData(data.userData);
-                setIsLoggedIn(true);
             } else {
                 toast.error(data.message);
-                setUserData(null);
-                setIsLoggedIn(false);
             }
         } catch (error) {
-            console.error('Failed to get user data:', error);
             toast.error(error.response?.data?.message || 'Failed to get user data');
-            setUserData(null);
-            setIsLoggedIn(false);
         }
     }, [backendUrl]);
 
     const getAuthState = useCallback(async ()=> {
         try {
+            axios.defaults.withCredentials = true;
             const {data} = await axios.get(backendUrl + '/api/auth/is-auth');
             if (data.success) {
                 setIsLoggedIn(true);
-                await getUserData();
-            } else {
-                setIsLoggedIn(false);
-                setUserData(null);
+                getUserData();
             }
-        } catch (error) {
-            console.error('Auth state check failed:', error);
-            setIsLoggedIn(false);
-            setUserData(null);
-            // Don't show toast error for auth check as it's called on app load
+        }catch (error) {
+            toast.error(error.response?.data?.message || 'Failed to check auth state');
         }
     }, [backendUrl, getUserData]);
 
@@ -60,8 +45,7 @@ export const AppContextProvider = (props) => {
         backendUrl, 
         isLoggedIn, setIsLoggedIn,
         userData, setUserData,
-        getUserData,
-        getAuthState
+        getUserData
     }
 
     return (

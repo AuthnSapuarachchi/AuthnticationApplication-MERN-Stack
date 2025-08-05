@@ -12,7 +12,7 @@ const NavBar = () => {
 
     const sendVerificationOtp = async () => {
       try {
-        const { data } = await axios.post(backendUrl + '/api/auth/send-verify-otp');
+        const { data } = await axios.post(backendUrl + '/api/user/send-verify-otp');
         if (data.success) {
           navigate('/email-verify');
           toast.success('Verification email sent successfully');
@@ -27,17 +27,15 @@ const NavBar = () => {
 
     const logout = async () => {
       try {
+        axios.defaults.withCredentials = true;
         const { data } = await axios.post(backendUrl + '/api/auth/logout');
         if (data.success) {
           setIsLoggedIn(false);
           setUserData(null);
           navigate('/');
           toast.success('Logged out successfully');
-        } else {
-          toast.error(data.message || 'Logout failed');
         }
       } catch (error) {
-        console.error('Logout failed:', error);
         toast.error(error.response?.data?.message || 'Logout failed');
       }
     }
