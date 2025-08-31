@@ -160,15 +160,15 @@ const ResetPassword = () => {
 
         {!isOtpSent ? (
           // Step 1: Email Input Form
-          <form onSubmit={sendResetOtp} className="space-y-6">
-            <div className='mb-6 flex items-center gap-4 w-full px-5 py-3 bg-[#333A5C] rounded-full shadow-md'>
+          <form onSubmit={sendResetOtp}>
+            <div className='mb-4 flex items-center gap-4 w-full px-5 py-2.5 bg-[#333A5C] rounded-full shadow-md'>
               <img src={assets.mail_icon} alt="" />
               <input 
                 onChange={(e) => setEmail(e.target.value)} 
                 value={email} 
                 type="email" 
-                placeholder='Enter your email address' 
-                className='bg-transparent outline-none w-full text-white placeholder-gray-400'
+                placeholder='Enter your email' 
+                className='bg-transparent outline-none w-full'
                 disabled={isSubmitting}
                 required
               />
@@ -177,20 +177,9 @@ const ResetPassword = () => {
             <button 
               type="submit"
               disabled={isSubmitting}
-              className={`w-full py-3 rounded-full font-semibold transition-all ${
-                isSubmitting
-                  ? 'bg-gray-600 cursor-not-allowed text-gray-400'
-                  : 'bg-gradient-to-r from-indigo-500 to-indigo-900 hover:from-indigo-600 hover:to-indigo-800 text-white'
-              }`}
+              className='w-full bg-gradient-to-r from-indigo-500 to-indigo-900 text-white py-2 rounded-full hover:bg-indigo-900 transition-all cursor-pointer disabled:opacity-50'
             >
-              {isSubmitting ? (
-                <div className='flex items-center justify-center gap-2'>
-                  <div className='w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin'></div>
-                  Sending...
-                </div>
-              ) : (
-                'Send Reset Code'
-              )}
+              {isSubmitting ? 'Sending...' : 'Send Reset Code'}
             </button>
           </form>
         ) : (
