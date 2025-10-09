@@ -14,51 +14,6 @@ const AdminDashboard = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchDashboardData = async () => {
-      try {
-        setLoading(true);
-        axios.defaults.withCredentials = true;
-
-        let endpoint = '';
-        if (userData?.role === 'admin') {
-          endpoint = '/api/user/dashboard/admin';
-        } else if (userData?.role === 'moderator') {
-          endpoint = '/api/user/dashboard/moderator';
-        }
-
-        console.log('Fetching dashboard from:', backendUrl + endpoint);
-        
-        const { data } = await axios.get(backendUrl + endpoint, {
-          withCredentials: true
-        });
-
-        console.log('Dashboard response:', data);
-
-        if (data.success) {
-          // Store the dashboard data based on role
-          if (userData?.role === 'admin') {
-            setAdminData(data.dashboard);
-          } else if (userData?.role === 'moderator') {
-            setModeratorData(data.dashboard);
-          }
-          toast.success('Dashboard loaded successfully!');
-        } else {
-          console.error('Dashboard fetch failed:', data.message);
-          toast.error(data.message || 'Failed to load dashboard');
-        }
-      } catch (error) {
-        console.error('Error fetching dashboard:', error);
-        console.error('Error details:', {
-          message: error.message,
-          response: error.response?.data,
-          status: error.response?.status
-        });
-        toast.error(error.response?.data?.message || 'Failed to load dashboard data');
-      } finally {
-        setLoading(false);
-      }
-    };
-
     if (!isLoggedIn) {
       toast.error('Please login first');
       navigate('/login');
@@ -73,7 +28,52 @@ const AdminDashboard = () => {
     }
 
     fetchDashboardData();
-  }, [isLoggedIn, userData, navigate, backendUrl]);
+  }, [isLoggedIn, userData]);
+
+  const fetchDashboardData = async () => {
+    try {
+      setLoading(true);
+      axios.defaults.withCredentials = true;
+
+      let endpoint = '';
+      if (userData?.role === 'admin') {
+        endpoint = '/api/user/dashboard/admin';
+      } else if (userData?.role === 'moderator') {
+        endpoint = '/api/user/dashboard/moderator';
+      }
+
+      console.log('Fetching dashboard from:', backendUrl + endpoint);
+      
+      const { data } = await axios.get(backendUrl + endpoint, {
+        withCredentials: true
+      });
+
+      console.log('Dashboard response:', data);
+
+      if (data.success) {
+        // Store the dashboard data based on role
+        if (userData?.role === 'admin') {
+          setAdminData(data.dashboard);
+        } else if (userData?.role === 'moderator') {
+          setModeratorData(data.dashboard);
+        }
+        toast.success('Dashboard loaded successfully!');
+      } else {
+        console.error('Dashboard fetch failed:', data.message);
+        toast.error(data.message || 'Failed to load dashboard');
+      }
+    } catch (error) {
+      console.error('Error fetching dashboard:', error);
+      console.error('Error details:', {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status
+      });
+      toast.error(error.response?.data?.message || 'Failed to load dashboard data');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   if (loading) {
     return (

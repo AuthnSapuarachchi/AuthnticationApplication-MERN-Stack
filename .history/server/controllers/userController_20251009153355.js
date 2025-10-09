@@ -224,7 +224,6 @@ export const getAdminDashboard = async (req, res) => {
             createdAt: { $gte: last30Days } 
         });
 
-        console.log('Sending admin dashboard data successfully');
         res.json({
             success: true,
             dashboard: {

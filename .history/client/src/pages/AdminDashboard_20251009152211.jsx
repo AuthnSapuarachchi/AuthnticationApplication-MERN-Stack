@@ -14,51 +14,6 @@ const AdminDashboard = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchDashboardData = async () => {
-      try {
-        setLoading(true);
-        axios.defaults.withCredentials = true;
-
-        let endpoint = '';
-        if (userData?.role === 'admin') {
-          endpoint = '/api/user/dashboard/admin';
-        } else if (userData?.role === 'moderator') {
-          endpoint = '/api/user/dashboard/moderator';
-        }
-
-        console.log('Fetching dashboard from:', backendUrl + endpoint);
-        
-        const { data } = await axios.get(backendUrl + endpoint, {
-          withCredentials: true
-        });
-
-        console.log('Dashboard response:', data);
-
-        if (data.success) {
-          // Store the dashboard data based on role
-          if (userData?.role === 'admin') {
-            setAdminData(data.dashboard);
-          } else if (userData?.role === 'moderator') {
-            setModeratorData(data.dashboard);
-          }
-          toast.success('Dashboard loaded successfully!');
-        } else {
-          console.error('Dashboard fetch failed:', data.message);
-          toast.error(data.message || 'Failed to load dashboard');
-        }
-      } catch (error) {
-        console.error('Error fetching dashboard:', error);
-        console.error('Error details:', {
-          message: error.message,
-          response: error.response?.data,
-          status: error.response?.status
-        });
-        toast.error(error.response?.data?.message || 'Failed to load dashboard data');
-      } finally {
-        setLoading(false);
-      }
-    };
-
     if (!isLoggedIn) {
       toast.error('Please login first');
       navigate('/login');
@@ -73,7 +28,52 @@ const AdminDashboard = () => {
     }
 
     fetchDashboardData();
-  }, [isLoggedIn, userData, navigate, backendUrl]);
+  }, [isLoggedIn, userData]);
+
+  const fetchDashboardData = async () => {
+    try {
+      setLoading(true);
+      axios.defaults.withCredentials = true;
+
+      let endpoint = '';
+      if (userData?.role === 'admin') {
+        endpoint = '/api/user/dashboard/admin';
+      } else if (userData?.role === 'moderator') {
+        endpoint = '/api/user/dashboard/moderator';
+      }
+
+      console.log('Fetching dashboard from:', backendUrl + endpoint);
+      
+      const { data } = await axios.get(backendUrl + endpoint, {
+        withCredentials: true
+      });
+
+      console.log('Dashboard response:', data);
+
+      if (data.success) {
+        // Store the dashboard data based on role
+        if (userData?.role === 'admin') {
+          setAdminData(data.dashboard);
+        } else if (userData?.role === 'moderator') {
+          setModeratorData(data.dashboard);
+        }
+        toast.success('Dashboard loaded successfully!');
+      } else {
+        console.error('Dashboard fetch failed:', data.message);
+        toast.error(data.message || 'Failed to load dashboard');
+      }
+    } catch (error) {
+      console.error('Error fetching dashboard:', error);
+      console.error('Error details:', {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status
+      });
+      toast.error(error.response?.data?.message || 'Failed to load dashboard data');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -209,63 +209,28 @@ const AdminDashboard = () => {
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
                     <div className="bg-slate-800 p-4 rounded-lg">
                       <p className="text-gray-400 text-sm">Total Users</p>
-                      <p className="text-3xl font-bold text-blue-400">{dashboardData.stats.totalUsers}</p>
+                      <p className="text-3xl font-bold text-yellow-400">23</p>
                     </div>
                     <div className="bg-slate-800 p-4 rounded-lg">
-                      <p className="text-gray-400 text-sm">Pending Reports</p>
-                      <p className="text-3xl font-bold text-yellow-400">{dashboardData.stats.pendingReports}</p>
-                    </div>
-                    <div className="bg-slate-800 p-4 rounded-lg">
-                      <p className="text-gray-400 text-sm">Resolved Today</p>
-                      <p className="text-3xl font-bold text-green-400">{dashboardData.stats.resolvedToday}</p>
+                      <p className="text-gray-400 text-sm">Reports Handled</p>
+                      <p className="text-3xl font-bold text-blue-400">145</p>
                     </div>
                   </div>
 
-                  {dashboardData.recentUsers && dashboardData.recentUsers.length > 0 && (
-                    <div className="mt-6">
-                      <h3 className="text-lg font-semibold mb-3">Recent Users</h3>
-                      <div className="space-y-2">
-                        {dashboardData.recentUsers.slice(0, 5).map((user, index) => (
-                          <div key={user._id || index} className="bg-slate-800 p-3 rounded flex justify-between items-center">
-                            <div>
-                              <p className="font-medium">{user.name}</p>
-                              <p className="text-sm text-gray-400">{user.email}</p>
-                            </div>
-                            <span className={`px-2 py-1 rounded text-xs ${
-                              user.isAccountVerified 
-                                ? 'bg-green-700 text-green-100' 
-                                : 'bg-yellow-700 text-yellow-100'
-                            }`}>
-                              {user.isAccountVerified ? 'Verified' : 'Unverified'}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {dashboardData.tasks && (
-                    <div className="mt-6 space-y-3">
-                      <h3 className="text-lg font-semibold">Active Tasks</h3>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                        <div className="bg-slate-800 p-3 rounded">
-                          <p className="text-gray-400 text-xs">Pending Reviews</p>
-                          <p className="text-yellow-400 font-bold text-xl">{dashboardData.tasks.pendingReviews}</p>
-                        </div>
-                        <div className="bg-slate-800 p-3 rounded">
-                          <p className="text-gray-400 text-xs">Flagged Content</p>
-                          <p className="text-red-400 font-bold text-xl">{dashboardData.tasks.flaggedContent}</p>
-                        </div>
-                        <div className="bg-slate-800 p-3 rounded">
-                          <p className="text-gray-400 text-xs">User Reports</p>
-                          <p className="text-orange-400 font-bold text-xl">{dashboardData.tasks.userReports}</p>
-                        </div>
-                      </div>
-                    </div>
-                  )}
+                  <div className="mt-6 space-y-3">
+                    <h3 className="text-lg font-semibold">Moderator Privileges:</h3>
+                    <ul className="space-y-2 text-gray-300">
+                      <li>✓ Content moderation</li>
+                      <li>✓ User reports review</li>
+                      <li>✓ Limited user management</li>
+                      <li>✓ View moderation logs</li>
+                    </ul>
+                  </div>
                 </div>
+              ) : (
+                <p className="text-gray-400">No moderator data available</p>
               )}
-            </>
+            </div>
           )}
 
           {/* Role Information */}

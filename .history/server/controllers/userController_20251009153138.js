@@ -171,28 +171,13 @@ export const getModeratorDashboard = async (req, res) => {
 // Admin Dashboard Data
 export const getAdminDashboard = async (req, res) => {
     try {
-        console.log('getAdminDashboard called');
-        console.log('req.body:', req.body);
-        
         const { userId } = req.body;
 
-        if (!userId) {
-            console.error('No userId in request body');
-            return res.status(400).json({ 
-                success: false, 
-                message: "User ID is required. Please login again." 
-            });
-        }
-
-        console.log('Fetching admin dashboard for userId:', userId);
         const user = await userModel.findById(userId);
         
         if (!user) {
-            console.error('User not found for userId:', userId);
             return res.status(404).json({ success: false, message: "User not found" });
         }
-
-        console.log('User found:', user.name, 'Role:', user.role);
 
         // Get comprehensive stats
         const totalUsers = await userModel.countDocuments();
@@ -224,7 +209,6 @@ export const getAdminDashboard = async (req, res) => {
             createdAt: { $gte: last30Days } 
         });
 
-        console.log('Sending admin dashboard data successfully');
         res.json({
             success: true,
             dashboard: {
