@@ -107,6 +107,16 @@ export const login = async (req, res) => {
             return res.status(400).json({ message: "Invalid password" });
         }
 
+        // Check if 2FA is enabled
+        if (user.twoFactorEnabled) {
+            return res.status(200).json({ 
+                success: true, 
+                requires2FA: true,
+                message: "Please enter your 2FA code",
+                email: user.email
+            });
+        }
+
         // Generate access and refresh tokens
         const accessToken = generateAccessToken(user._id);
         const refreshToken = generateRefreshToken(user._id);
@@ -130,7 +140,7 @@ export const login = async (req, res) => {
             maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
         });
 
-        return res.status(200).json({ success: true, message: "Login successful" });
+        return res.status(200).json({ success: true, requires2FA: false, message: "Login successful" });
         
     } catch (error) {   
        return res.status(500).json({ success: false, message: "Server error" }); 
