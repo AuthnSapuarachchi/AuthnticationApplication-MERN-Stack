@@ -4,6 +4,12 @@ import userModel from '../model/usermodel.js';
 import transporter from '../config/nodemailer.js';
 import { EMAIL_VERIFICATION_TEMPLATE } from '../config/emailTemplates.js';
 
+// Helper functions for token generation
+const generateAccessToken = (userId) => 
+    jwt.sign({ id: userId }, process.env.JWT_SECRET, { expiresIn: '15m' });
+
+const generateRefreshToken = (userId) => 
+    jwt.sign({ id: userId }, process.env.JWT_REFRESH_SECRET, { expiresIn: '7d' });
 
 export const register = async (req, res) => {
     const { name, email, password } = req.body;
@@ -22,13 +28,27 @@ export const register = async (req, res) => {
         const newUser = new userModel({ name, email, password: hashedPassword });
         await newUser.save();
 
-        const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+        // Generate access and refresh tokens
+        const accessToken = generateAccessToken(newUser._id);
+        const refreshToken = generateRefreshToken(newUser._id);
 
-        res.cookie('token', token, {
+        // Save refresh token to database
+        newUser.refreshTokens = newUser.refreshTokens || [];
+        newUser.refreshTokens.push(refreshToken);
+        await newUser.save();
+
+        // Set cookies with different expiration times
+        res.cookie('token', accessToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'strict',
-            maxAge: 7 * 24 * 60 * 60 * 1000
+            maxAge: 15 * 60 * 1000 // 15 minutes
+        });
+        res.cookie('refreshToken', refreshToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'strict',
+            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
         });
         //sending welcome email
         const mailOptions = {
@@ -87,13 +107,27 @@ export const login = async (req, res) => {
             return res.status(400).json({ message: "Invalid password" });
         }
 
-        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+        // Generate access and refresh tokens
+        const accessToken = generateAccessToken(user._id);
+        const refreshToken = generateRefreshToken(user._id);
 
-        res.cookie('token', token, {
+        // Save refresh token to database
+        user.refreshTokens = user.refreshTokens || [];
+        user.refreshTokens.push(refreshToken);
+        await user.save();
+
+        // Set cookies with different expiration times
+        res.cookie('token', accessToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'strict',
-            maxAge: 7 * 24 * 60 * 60 * 1000
+            maxAge: 15 * 60 * 1000 // 15 minutes
+        });
+        res.cookie('refreshToken', refreshToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'strict',
+            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
         });
 
         return res.status(200).json({ success: true, message: "Login successful" });
@@ -105,11 +139,35 @@ export const login = async (req, res) => {
 
 export const logout = async (req, res) => {
     try {
+        const { refreshToken } = req.cookies;
+        
+        // Remove refresh token from database
+        if (refreshToken) {
+            try {
+                const payload = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
+                const user = await userModel.findById(payload.id);
+                if (user) {
+                    user.refreshTokens = user.refreshTokens.filter(t => t !== refreshToken);
+                    await user.save();
+                }
+            } catch (e) {
+                // Ignore token errors on logout
+                console.log('Token verification failed during logout, continuing...');
+            }
+        }
+        
+        // Clear both cookies
         res.clearCookie('token', {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'strict'
         });
+        res.clearCookie('refreshToken', {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'strict'
+        });
+        
         return res.status(200).json({ success: true, message: "Logout successful" });
     } catch (error) {
         console.error(error);
@@ -359,7 +417,7 @@ export const resetPassword = async (req, res) => {
             return res.status(400).json({ success: false, message: "Invalid OTP" });
         }
 
-        if(user.resetOtpExpireA < Date.now()) {
+        if(user.resetOtpExpireAt < Date.now()) {
             return res.status(400).json({ success: false, message: "OTP expired" });
         }
 
@@ -376,4 +434,64 @@ export const resetPassword = async (req, res) => {
         return res.status(500).json({ success: false, message: "Server error", error: error.message });
     }
 
+}
+
+// Refresh Token Controller
+export const refreshToken = async (req, res) => {
+    try {
+        const { refreshToken } = req.cookies;
+        
+        if (!refreshToken) {
+            return res.status(401).json({ success: false, message: "No refresh token provided" });
+        }
+
+        // Verify refresh token
+        const payload = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
+        const user = await userModel.findById(payload.id);
+        
+        if (!user || !user.refreshTokens.includes(refreshToken)) {
+            return res.status(403).json({ success: false, message: "Invalid refresh token" });
+        }
+
+        // Token rotation: remove old refresh token, generate new ones
+        user.refreshTokens = user.refreshTokens.filter(t => t !== refreshToken);
+        
+        const newAccessToken = generateAccessToken(user._id);
+        const newRefreshToken = generateRefreshToken(user._id);
+        
+        user.refreshTokens.push(newRefreshToken);
+        await user.save();
+
+        // Set new cookies
+        res.cookie('token', newAccessToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'strict',
+            maxAge: 15 * 60 * 1000 // 15 minutes
+        });
+        res.cookie('refreshToken', newRefreshToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'strict',
+            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+        });
+
+        return res.status(200).json({ 
+            success: true, 
+            message: "Token refreshed successfully" 
+        });
+
+    } catch (error) {
+        console.error('Refresh token error:', error);
+        if (error.name === 'JsonWebTokenError') {
+            return res.status(403).json({ success: false, message: "Invalid refresh token" });
+        } else if (error.name === 'TokenExpiredError') {
+            return res.status(403).json({ success: false, message: "Refresh token expired. Please login again" });
+        }
+        return res.status(500).json({ 
+            success: false, 
+            message: "Server error", 
+            error: error.message 
+        });
+    }
 }

@@ -17,6 +17,9 @@ authRoutes.post('/send-reset-otp', sendResetOtp);
 authRoutes.post('/reset-password', resetPassword);
 authRoutes.get('/test-email', testEmail); // Test route for SMTP
 authRoutes.post('/test-auth', userAuth, testAuth); // Test route for authentication
+userRouter.get('/admin-data', userAuth, roleAuth('admin'), (req, res) => {
+    res.json({ success: true, message: "Admin data access granted" });
+});
 authRoutes.get('/health', (req, res) => {
     res.json({ success: true, message: "Server is healthy", timestamp: new Date().toISOString() });
 }); // Simple health check

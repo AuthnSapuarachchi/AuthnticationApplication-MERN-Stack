@@ -22,7 +22,7 @@ const userAuth = async (req, res, next) => {
             req.body.userId = tokenDecoded.id; 
             const user = await userModel.findById(tokenDecoded.id).select('role');
             req.body.role = user?.role || 'user';
-            console.log('UserId added to request body:', tokenDecoded.id, user?.role);
+            console.log('UserId added to request body:', tokenDecoded.id);
             next();
         } else {
             console.log('No user ID found in token');

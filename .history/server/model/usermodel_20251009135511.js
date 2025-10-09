@@ -9,8 +9,7 @@ const userSchema = new mongoose.Schema({
     isAccountVerified: { type: Boolean, default: false },
     resetOtp: { type: String, default: '' },
     resetOtpExpireAt: { type: Number, default: 0 },
-    role: { type: String, enum: ['user', 'admin', 'moderator'], default: 'user' },
-    refreshTokens: [{ type: String }]
+    role: { type: String, enum: ['user', 'admin', 'moderator'], default: 'user' }
 });
 
 const userModel = mongoose.model.user || mongoose.model('user', userSchema);

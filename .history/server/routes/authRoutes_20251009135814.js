@@ -1,5 +1,5 @@
 import express from 'express';
-import { login, logout, register, verifyEmail, sendVerifyOtp, testEmail, testAuth, isAuthenticated, sendResetOtp, resetPassword, refreshToken } from '../controllers/authController.js';
+import { login, logout, register, verifyEmail, sendVerifyOtp, testEmail, testAuth, isAuthenticated, sendResetOtp, resetPassword } from '../controllers/authController.js';
 import userAuth from '../middleware/userAuth.js';
 import roleAuth from '../middleware/roleAuth.js';
 
@@ -9,7 +9,6 @@ const authRoutes = express.Router();
 authRoutes.post('/register', register);
 authRoutes.post('/login', login);
 authRoutes.post('/logout', logout);
-authRoutes.post('/refresh-token', refreshToken);
 authRoutes.post('/send-verify-otp', userAuth, sendVerifyOtp);
 authRoutes.post('/verify-account', userAuth, verifyEmail);
 authRoutes.get('/is-auth', userAuth, isAuthenticated);

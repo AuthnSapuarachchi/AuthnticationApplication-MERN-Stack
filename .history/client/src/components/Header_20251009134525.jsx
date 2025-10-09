@@ -20,8 +20,7 @@ const Header = () => {
         <h2 className='text-3xl sm:text-5xl font-semibold mb-4'>Welcome to AuthCodeLab</h2>
         <p className='mb-8 max-w-md'>Let's start with a quick product tour and we will have you up and running in no time</p>
         <button className='border border-gray-500 rounded-full px-8 py-2.5
-        hover:bg-gray-100 transition-all' 
-        onClick={() => navigate('/login')}>Get Started</button>
+        hover:bg-gray-100 transition-all' >Get Started</button>
     </div>
   )
 }
