@@ -1,5 +1,4 @@
 import React, { useState, useContext, useRef, useEffect } from 'react'
-import { assets } from '../assets/assets'
 import { useNavigate } from 'react-router-dom'
 import { AppContext } from '../context/AppContext.jsx'
 import axios from 'axios'
@@ -10,6 +9,7 @@ const ResetPassword = () => {
   const { backendUrl } = useContext(AppContext);
   const [email, setEmail] = useState('');
   const [newPassword, setNewPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [isOtpSent, setIsOtpSent] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -144,167 +144,220 @@ const ResetPassword = () => {
   };
 
   return (
-    <div className='flex items-center justify-center min-h-screen px-6 sm:px-0 bg-gradient-to-r from-blue-200 to-purple-400 relative'>
-      <img onClick={() => navigate('/')} src={assets.logo} alt="" className='absolute left-5 sm:left-20 top-5 w-28 sm:w-32 cursor-pointer' />
-      
-      <div className='bg-slate-900 p-10 rounded-lg shadow-lg w-full sm:w-96 text-indigo-300 text-sm'>
-        <h2 className='text-3xl font-semibold mb-4 text-white text-center'>
-          {!isOtpSent ? 'Reset Password' : 'Enter New Password'}
-        </h2>
-        <p className='text-center text-sm mb-6 text-gray-400'>
-          {!isOtpSent 
-            ? 'Enter your email to receive reset code' 
-            : 'Enter the OTP and your new password'
-          }
-        </p>
+    <div className='min-h-screen flex items-center justify-center p-6 bg-gray-50'>
+      <div className='w-full max-w-md'>
+        {/* Back Button */}
+        <div className='mb-8'>
+          <button 
+            onClick={() => navigate('/login')} 
+            className='flex items-center gap-2 text-gray-600 hover:text-indigo-600 transition-colors group'
+          >
+            <svg className='w-5 h-5 group-hover:-translate-x-1 transition-transform' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+              <path strokeLinecap='round' strokeLinejoin='round' strokeWidth='2' d='M10 19l-7-7m0 0l7-7m-7 7h18' />
+            </svg>
+            <span className='font-medium'>Back to Login</span>
+          </button>
+        </div>
 
-        {!isOtpSent ? (
-          // Step 1: Email Input Form
-          <form onSubmit={sendResetOtp} className="space-y-6">
-            <div className='mb-6 flex items-center gap-4 w-full px-5 py-3 bg-[#333A5C] rounded-full shadow-md'>
-              <img src={assets.mail_icon} alt="" />
-              <input 
-                onChange={(e) => setEmail(e.target.value)} 
-                value={email} 
-                type="email" 
-                placeholder='Enter your email address' 
-                className='bg-transparent outline-none w-full text-white placeholder-gray-400'
-                disabled={isSubmitting}
-                required
-              />
-            </div>
+        {/* Header */}
+        <div className='text-center mb-8'>
+          <div className='w-16 h-16 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4'>
+            <svg className='w-8 h-8 text-white' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+              <path strokeLinecap='round' strokeLinejoin='round' strokeWidth='2' d='M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z' />
+            </svg>
+          </div>
+          <h2 className='text-3xl font-bold text-gray-900 mb-2'>
+            {!isOtpSent ? 'Reset Password' : 'Create New Password'}
+          </h2>
+          <p className='text-gray-600'>
+            {!isOtpSent 
+              ? 'Enter your email to receive a reset code' 
+              : 'Enter the code and your new password'
+            }
+          </p>
+        </div>
 
-            <button 
-              type="submit"
-              disabled={isSubmitting}
-              className={`w-full py-3 rounded-full font-semibold transition-all ${
-                isSubmitting
-                  ? 'bg-gray-600 cursor-not-allowed text-gray-400'
-                  : 'bg-gradient-to-r from-indigo-500 to-indigo-900 hover:from-indigo-600 hover:to-indigo-800 text-white'
-              }`}
-            >
-              {isSubmitting ? (
-                <div className='flex items-center justify-center gap-2'>
-                  <div className='w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin'></div>
-                  Sending...
-                </div>
-              ) : (
-                'Send Reset Code'
-              )}
-            </button>
-          </form>
-        ) : (
-          // Step 2: OTP and New Password Form
-          <form onSubmit={resetPassword} className="space-y-6">
-            {/* Email Display */}
-            <div className='mb-6 p-3 bg-[#2a2f47] rounded-lg border-l-4 border-indigo-500'>
-              <p className='text-sm text-gray-300'>
-                <span className='text-indigo-400 font-medium'>Reset code sent to:</span>
-                <br />
-                <span className='text-white'>{email}</span>
-              </p>
-            </div>
-
-            {/* OTP Input Fields */}
-            <div className='mb-6'>
-              <p className='text-center text-sm mb-4 text-gray-400'>Enter the 6-digit code</p>
-              <div className='flex justify-center gap-2 mb-4'>
-                {otp.map((data, index) => (
-                  <input
-                    key={index}
-                    type='text'
-                    maxLength='1'
-                    value={data}
-                    ref={(ref) => (inputRefs.current[index] = ref)}
-                    onChange={(e) => handleInputChange(e.target, index)}
-                    onKeyDown={(e) => handleKeyDown(e, index)}
-                    onPaste={handlePaste}
-                    className='w-12 h-12 text-center text-xl font-bold bg-[#333A5C] border-2 border-gray-600 rounded-lg focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all text-white'
+        {/* Form Card */}
+        <div className='bg-white rounded-2xl shadow-sm border border-gray-200 p-8'>
+          {!isOtpSent ? (
+            // Step 1: Email Input Form
+            <form onSubmit={sendResetOtp} className="space-y-6">
+              <div>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>
+                  Email Address
+                </label>
+                <div className='relative'>
+                  <div className='absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none'>
+                    <svg className='w-5 h-5 text-gray-400' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                      <path strokeLinecap='round' strokeLinejoin='round' strokeWidth='2' d='M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z' />
+                    </svg>
+                  </div>
+                  <input 
+                    onChange={(e) => setEmail(e.target.value)} 
+                    value={email} 
+                    type="email" 
+                    placeholder='you@example.com' 
+                    className='w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all'
                     disabled={isSubmitting}
+                    required
                   />
-                ))}
-              </div>
-            </div>
-
-            {/* New Password Input */}
-            <div className='mb-6 flex items-center gap-4 w-full px-5 py-2.5 bg-[#333A5C] rounded-full shadow-md'>
-              <img src={assets.lock_icon} alt="" />
-              <input 
-                onChange={(e) => setNewPassword(e.target.value)} 
-                value={newPassword} 
-                type="password" 
-                placeholder='Enter new password' 
-                className='bg-transparent outline-none w-full'
-                disabled={isSubmitting}
-                required
-              />
-            </div>
-
-            {/* Submit Button */}
-            <button 
-              type="submit"
-              disabled={isSubmitting || otp.join('').length !== 6}
-              className={`w-full py-3 rounded-full font-semibold transition-all ${
-                isSubmitting || otp.join('').length !== 6
-                  ? 'bg-gray-600 cursor-not-allowed text-gray-400'
-                  : 'bg-gradient-to-r from-indigo-500 to-indigo-900 hover:from-indigo-600 hover:to-indigo-800 text-white'
-              }`}
-            >
-              {isSubmitting ? (
-                <div className='flex items-center justify-center gap-2'>
-                  <div className='w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin'></div>
-                  Resetting...
                 </div>
-              ) : (
-                'Reset Password'
-              )}
-            </button>
+              </div>
 
-            {/* Resend OTP */}
-            <div className='text-center pt-4 border-t border-gray-700'>
-              <p className='text-gray-400 text-sm mb-3'>Didn't receive the code?</p>
-              <button
-                type='button'
-                onClick={resendOtp}
-                disabled={isResending || isSubmitting}
-                className={`text-indigo-400 font-medium hover:text-indigo-300 transition-colors ${
-                  isResending || isSubmitting ? 'opacity-50 cursor-not-allowed' : 'hover:underline'
-                }`}
+              <button 
+                type="submit"
+                disabled={isSubmitting}
+                className='w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3 rounded-lg font-medium hover:from-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none'
               >
-                {isResending ? (
+                {isSubmitting ? (
                   <div className='flex items-center justify-center gap-2'>
-                    <div className='w-4 h-4 border-2 border-indigo-400 border-t-transparent rounded-full animate-spin'></div>
-                    Resending...
+                    <div className='w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin'></div>
+                    Sending...
                   </div>
                 ) : (
-                  'Resend Code'
+                  'Send Reset Code'
                 )}
               </button>
-            </div>
-          </form>
-        )}
+            </form>
+          ) : (
+            // Step 2: OTP and New Password Form
+            <form onSubmit={resetPassword} className="space-y-6">
+              {/* Email Display */}
+              <div className='p-4 bg-indigo-50 border border-indigo-100 rounded-lg'>
+                <p className='text-sm text-gray-600'>
+                  Code sent to:
+                  <br />
+                  <span className='text-gray-900 font-medium'>{email}</span>
+                </p>
+              </div>
 
-        <div className='text-center mt-6 space-y-3'>
-          {isOtpSent && (
-            <button 
-              onClick={() => {
-                setIsOtpSent(false);
-                setOtp(['', '', '', '', '', '']);
-                setNewPassword('');
-              }} 
-              className='text-indigo-400 cursor-pointer hover:underline font-medium'
-            >
-              ← Back to Email
-            </button>
+              {/* OTP Input Fields */}
+              <div>
+                <label className='block text-sm font-medium text-gray-700 mb-3 text-center'>
+                  Enter 6-Digit Code
+                </label>
+                <div className='flex justify-center gap-2 mb-4'>
+                  {otp.map((data, index) => (
+                    <input
+                      key={index}
+                      type='text'
+                      maxLength='1'
+                      value={data}
+                      ref={(ref) => (inputRefs.current[index] = ref)}
+                      onChange={(e) => handleInputChange(e.target, index)}
+                      onKeyDown={(e) => handleKeyDown(e, index)}
+                      onPaste={handlePaste}
+                      className='w-12 h-14 text-center text-xl font-bold bg-white border-2 border-gray-300 rounded-lg focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all text-gray-900'
+                      disabled={isSubmitting}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              {/* New Password Input */}
+              <div>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>
+                  New Password
+                </label>
+                <div className='relative'>
+                  <div className='absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none'>
+                    <svg className='w-5 h-5 text-gray-400' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                      <path strokeLinecap='round' strokeLinejoin='round' strokeWidth='2' d='M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z' />
+                    </svg>
+                  </div>
+                  <input 
+                    onChange={(e) => setNewPassword(e.target.value)} 
+                    value={newPassword} 
+                    type={showPassword ? 'text' : 'password'}
+                    placeholder='Enter new password' 
+                    className='w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all'
+                    disabled={isSubmitting}
+                    required
+                  />
+                  <button
+                    type='button'
+                    onClick={() => setShowPassword(!showPassword)}
+                    className='absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600'
+                  >
+                    {showPassword ? (
+                      <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                        <path strokeLinecap='round' strokeLinejoin='round' strokeWidth='2' d='M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21' />
+                      </svg>
+                    ) : (
+                      <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                        <path strokeLinecap='round' strokeLinejoin='round' strokeWidth='2' d='M15 12a3 3 0 11-6 0 3 3 0 016 0z' />
+                        <path strokeLinecap='round' strokeLinejoin='round' strokeWidth='2' d='M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z' />
+                      </svg>
+                    )}
+                  </button>
+                </div>
+                <p className='text-xs text-gray-500 mt-1'>Must be at least 6 characters</p>
+              </div>
+
+              {/* Submit Button */}
+              <button 
+                type="submit"
+                disabled={isSubmitting || otp.join('').length !== 6}
+                className='w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3 rounded-lg font-medium hover:from-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none'
+              >
+                {isSubmitting ? (
+                  <div className='flex items-center justify-center gap-2'>
+                    <div className='w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin'></div>
+                    Resetting...
+                  </div>
+                ) : (
+                  'Reset Password'
+                )}
+              </button>
+
+              {/* Resend Code */}
+              <div className='text-center pt-4 border-t border-gray-200'>
+                <p className='text-gray-600 text-sm mb-2'>Didn't receive the code?</p>
+                <button
+                  type='button'
+                  onClick={resendOtp}
+                  disabled={isResending || isSubmitting}
+                  className='text-indigo-600 font-medium hover:text-indigo-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
+                >
+                  {isResending ? (
+                    <div className='flex items-center justify-center gap-2'>
+                      <div className='w-4 h-4 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin'></div>
+                      Resending...
+                    </div>
+                  ) : (
+                    'Resend Code'
+                  )}
+                </button>
+              </div>
+
+              {/* Back to Email */}
+              <div className='text-center'>
+                <button 
+                  type='button'
+                  onClick={() => {
+                    setIsOtpSent(false);
+                    setOtp(['', '', '', '', '', '']);
+                    setNewPassword('');
+                  }} 
+                  className='text-sm text-gray-600 hover:text-gray-900 transition-colors'
+                >
+                  ← Use different email
+                </button>
+              </div>
+            </form>
           )}
-          <p className='text-gray-400 text-xs'>
+        </div>
+
+        {/* Footer */}
+        <div className='text-center mt-6'>
+          <p className='text-sm text-gray-600'>
             Remember your password?{' '}
-            <span 
-              className='text-blue-400 cursor-pointer underline' 
+            <button 
               onClick={() => navigate('/login')}
+              className='font-medium text-indigo-600 hover:text-indigo-500'
             >
-              Login here
-            </span>
+              Sign in
+            </button>
           </p>
         </div>
       </div>
