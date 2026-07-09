@@ -1,0 +1,39 @@
+Optimized tool selection
+
+I’m mapping the app from its entry points first, then I’ll trace the frontend pages and backend routes/controllers so I can give you a grounded end-to-end summary.
+
+I’ve got the app shell and entry points. Next I’m reading the auth flow, the page components, and the server route/controller layer so the summary reflects the actual implementation rather than the folder names.
+
+I’ve confirmed the app is an auth-focused MERN stack with email OTP and 2FA hooks. I’m now filling the gaps in the remaining pages and the backend business logic so I can describe the full flow accurately.
+
+I’ve got the app shell and entry points. Next I’m reading the auth flow, the page components, and the server route/controller layer so the summary reflects the actual implementation rather than the folder names.
+
+I’ve confirmed the app is an auth-focused MERN stack with email OTP and 2FA hooks. I’m now filling the gaps in the remaining pages and the backend business logic so I can describe the full flow accurately.
+
+The route map is clear now. I’m reading the controllers and data model next, because that’s where the real behavior lives: token handling, OTP generation, 2FA setup, and the dashboard payloads.
+
+I found an important detail: the server code is using a different model file than the one named in the folder tree. I’m checking that duplicate/legacy model path and the email assets so I can distinguish active code from leftovers.
+
+I’ve got the active auth path. I’m doing one more pass over the leftover settings/backoffice and the legacy server files so I can call out what is actually wired versus what looks like an older or unused path.
+
+I have the implementation layer now. I’m doing a quick endpoint sweep from the Postman collection so I can include the externally exposed API surface in the summary, not just the source files.
+
+I have enough to summarize the app architecture. I’m saving a short repo note about the actual entry points and the active model path so the next pass doesn’t have to rediscover the same wiring.
+
+This is a MERN authentication app with email-based verification, password reset, role-based dashboards, and optional two-factor authentication. The frontend is a Vite React app, and the backend is an Express + MongoDB API with JWT cookies and Nodemailer-based email delivery. The main wiring is in main.jsx, AppContext.jsx, and server.js.
+
+Frontend-wise, the app has these screens: Home, Login/Signup, Reset Password, Email Verification, Settings, 2FA Setup, 2FA Verify, User Dashboard, and Admin Dashboard. The home page combines a top nav and a hero section in Home.jsx, NavBar.jsx, and Header.jsx. The auth flow is centered in Login.jsx: registration and login share the same component, signup is routed through the same page, and login can branch into 2FA verification if the account has 2FA enabled. Password reset and email verification are separate OTP flows in ResetPassword.jsx and EmailVerify.jsx. Account security management lives in Settings.jsx, while TwoFactorSetup.jsx and TwoFactorVerify.jsx handle TOTP setup and login-time verification. The user and admin views are in UserDashboard.jsx and AdminDashboard.jsx.
+
+Backend-wise, the API is split into auth, user, and 2FA routers: authRoutes.js, userRoutes.js, and twoFactorRoutes.js. The auth controller in authController.js handles registration, login, logout, token refresh, email verification OTPs, password reset OTPs, and test endpoints. The user controller in userController.js serves current user data and builds the dashboard payloads for standard users, moderators, and admins. The 2FA controller in twoFactorController.js generates QR codes and backup codes, verifies TOTP codes, accepts backup codes during login, disables 2FA, reports 2FA status, and regenerates backup codes. Authentication is enforced by userAuth.js, which reads the JWT cookie and injects user context into the request, and role checks are done by roleAuth.js.
+
+The data model is in usermodel.js. It stores name, email, password, verification OTPs, reset OTPs, role, refresh tokens, 2FA secret, 2FA enabled flag, and backup codes. There is also a simpler legacy file at User.js, but it is not the one the app actually imports. Email delivery is configured in nodemailer.js, with fallback/alternate configs in nodemailer-gmail.js, nodemailer-alternative.js, and email HTML templates in emailTemplates.js and emailTemplates.js. MongoDB connection logic is in mongodb.js.
+
+A few important observations about the codebase: the README in README.md is outdated relative to the implementation. It says several security features are missing, but the code already includes basic role-based access, refresh-token rotation, email OTP verification, reset-password OTPs, and 2FA setup/login flows. There are also some leftover or inactive files, such as the empty admin.js and the unused AppContextDefinition.jsx. The dashboard controllers also mix real counts with some mock metrics, especially in moderator/admin analytics.
+
+The active API surface includes at least these routes: /api/auth/register, /api/auth/login, /api/auth/logout, /api/auth/refresh-token, /api/auth/send-verify-otp, /api/auth/verify-account, /api/auth/is-auth, /api/auth/send-reset-otp, /api/auth/reset-password, /api/auth/test-email, /api/auth/test-auth, /api/auth/health, /api/user/data, /api/user/dashboard/user, /api/user/dashboard/moderator, /api/user/dashboard/admin, /api/user/all-users, /api/user/update-role, and the 2FA routes under /api/2fa. The Postman collection in postman_collection.json documents most of the main auth and 2FA calls.
+
+I didn’t run the app end-to-end here, so runtime health still depends on your environment variables and external services like MongoDB and SMTP. If you want, I can next do one of these:
+
+Map every frontend screen to the exact backend endpoint it calls.
+Walk you through the full auth lifecycle step by step.
+Point out the main bugs, dead files, and security gaps in the project.
